@@ -1,0 +1,129 @@
+<?xml version='1.0'?>
+<!-- This ANT script is used to handle the website info,
+     including the Javadoc, documentation, and examples -->
+<project name='TableFilter-Website' default='all' basedir='.'>	
+	
+	<property name="website-dir" 
+		      value="/Users/coderazzi/development/website/java/tablefilter"/>
+	
+	<!--target name='all' depends='copy-doc, api, api5, example, src-zip'-->
+	<target name='all' depends='api, copy-doc, example, src-zip' />
+
+	<target name='copy-doc' depends='check'>
+		<copy todir="${website-dir}">
+			<fileset dir='doc'>
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+                <copy todir="${website-dir}/api" overwrite="true">
+                        <fileset dir='target/apidocs'>
+                                <include name="**/*"/>
+                        </fileset>
+                </copy>
+	</target>
+	
+	<target name='api' depends='check'>
+	    <javadoc access="protected" 
+	    	     author="true" 
+	    	     destdir="${website-dir}/api" 
+	    	     doctitle="TableFilter" 
+	    	     nodeprecated="false" 
+	    	     nodeprecatedlist="false" 
+	    	     noindex="false" 
+	    	     nonavbar="false" 
+	    	     notree="false" 
+	    	     source="1.7" 
+	    	     sourcepath="src/main/java" 
+	    	     excludepackagenames='net.coderazzi.filters.gui.editor'
+	    	     splitindex="true" 
+	    	     use="true" 
+	    	     version="true">
+	        <link href="http://docs.oracle.com/javase/7/docs/api/"/>
+	    </javadoc>
+	</target>
+
+	<target name='api5' depends='check'>
+	    <javadoc access="protected" 
+	    	     author="true" 
+	    	     destdir="${website-dir}/api5" 
+	    	     doctitle="TableFilter for Java 5" 
+	    	     nodeprecated="false" 
+	    	     nodeprecatedlist="false" 
+	    	     noindex="false" 
+	    	     nonavbar="false" 
+	    	     notree="false" 
+	    	     source="1.5" 
+	    	     sourcepath="../tablefilter-swing-java5/src/main/java" 
+	    	     excludepackagenames='net.coderazzi.filters.gui.editor'
+	    	     splitindex="true" 
+	    	     use="true" 
+	    	     version="true">
+	        <link href="http://docs.oracle.com/javase/1.5.0/docs/api/"/>
+	    </javadoc>
+	</target>
+
+	<target name='example' depends='check'>
+		<property name="tmp-bin" value="target/build"/>
+		<property name="example-dir" value="${website-dir}/download"/>
+		<property name="example-jar" value="${example-dir}/example6.jar"/>
+		<mkdir dir='${tmp-bin}'/>
+		<mkdir dir='${example-dir}'/>
+		<javac destdir='${tmp-bin}' 
+			   source='1.6' 
+			   debug='off' 
+			   srcdir='src/main/java' 
+			   includes='**/*.java'/>
+		<javac destdir='${tmp-bin}' 
+			   source='1.6' 
+			   debug='off' 
+			   srcdir='examples/src/main/java' 
+			   includes='**/*.java' />
+		<jar destfile='${example-jar}'> 
+			<fileset dir='${tmp-bin}'
+				     includes='net/coderazzi/filters/**/*.class'/>
+			<fileset dir='examples/src/resources'
+				     includes='**/*'/>
+			<fileset dir='src/main/resources'
+				     includes='**/*'/>
+			<manifest>
+			  <attribute name="Main-Class" 
+			  	    value="net.coderazzi.filters.examples.TableFilterExample"/>			
+		      <attribute name="Created-By" value="lu@coderazzi.net"/>
+		      <attribute name="Implementation-Vendor" value="coderazzi"/>
+		      <attribute name="Implementation-Title" value="TableFilter Example"/>
+		      <attribute name="Implementation-Version" value="${version}"/>
+			</manifest>
+		</jar>
+		<signjar jar="${example-jar}" alias="coderazzi" storepass="coderazzi"/>
+		<copy file='example.jnlp' todir='${example-dir}'/>
+		<delete dir='${tmp-bin}'/>
+	</target>
+
+	<!--target name='src-zip' depends='check'>
+		<zip destfile='${website-dir}/download/tablefilter-src.zip'
+			basedir='..'
+			includes='tablefilter-swing/**, tablefilter-swing-java5/**'
+			excludes='*/.hg/**, */bin/**, */target/**'/>
+	</target-->
+
+	<target name='src-zip' depends='check'>
+		<zip destfile='${website-dir}/download/tablefilter-src.zip'
+			basedir='..'
+			includes='tablefilter-swing/**'
+			excludes='*/.hg/**, */bin/**, */target/**'/>
+	</target>
+
+	<target name='check' >
+		<available file="${website-dir}" property="isFileAvail" />
+		<fail unless="isFileAvail" 
+			  message="Cannot find the directory ${website-dir}" />
+	</target>
+
+	<target name='generate-coderazzi-key' >
+		<genkey alias="coderazzi" 
+			    storepass="coderazzi" 
+			    dname="CN=Coderazzi, OU=Coderazzi, O=coderazzi.net, C=EU"
+		        validity="5000"/>
+	</target>
+
+</project>	

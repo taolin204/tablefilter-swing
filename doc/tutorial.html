@@ -1,0 +1,465 @@
+<html>
+<head>
+<title>TableFilter tutorial</title>
+<link rel="stylesheet" type="text/css" href="tablefilter.css">
+</head>
+<body><div id='content'>
+  <h1>TableFilter tutorial</h1>
+
+    <p>
+      <ul>
+        <li><a href='#header'>Filter Header</a></li>
+        <li><a href='#editor'>Filter Editor</a></li>
+        <li><a href='#autochoices'>Auto Choices</a></li>
+        <li><a href='#parser'>Filter Expressions</a></li>
+        <li><a href='#parsermodel'>Parser Model</a></li>
+        <li><a href='#types'>Custom types</a></li>
+        <li><a href='#custom'>Custom choices</a></li>
+        <li><a href='#compare'>Comparisons</a></li>
+        <li><a href='#html'>Html support</a></li>
+        <li><a href='#also'>Additional functionality</a></li>
+        <li><a href='#settings'>Settings</a></li>
+        <li><a href='#examples'>Examples</a></li>
+      </ul>
+    </p>
+    
+	<h2><a name='header'>Filter Header</a></h2>
+	
+	<p>
+      <span class='mark'>TableFilterHeader</span> is the main Gui component in 
+      the <span class='mark'>TableFilter</span> library; the following line of
+      code:
+    </p>
+      
+    <pre>TableFilterHeader filterHeader = new TableFilterHeader(table, AutoChoices.ENABLED);</pre>
+    
+    <p>is enough to setup a filter in a table, looking like:</p>
+    
+    <p><a name='mainfigure'><img src="images/show.png" class="centered"></a></p>
+
+	<p>The header can be placed as well just atop the table:</p>
+
+    <pre>filterHeader.setPosition(Position.TOP);</pre>
+
+    <p><img src="images/top.png" class="centered"></p>
+    
+    <p>
+      This header places together a set of filter editors, one per table's 
+      column, and is responsible to resize / move them as the table's columns 
+      change their layout. Please note that the colors, fonts, are fully customizable, and will
+      mimic by default the table header. The default look and feel, on Windows Vista, looks like:
+    </p>
+
+    <p><img src="images/vista.png" class="centered"></p>
+    
+    <p>
+      It is also possible to place manually the header, for example as a footer below the table:
+    </p>
+        
+    <p><img src="images/below.png" class="centered"></p>
+    
+    
+    <h2><a name='editor'>Filter Editor</a></h2>
+    
+    <p>
+      Each column in a table with a TableFilterHeader has an associated filter editor, that looks
+      like:
+    </p>
+    
+    <p><img src="images/version3.png" class="centered"></p>
+     
+    <p>
+      In this case, the content is text based, and a pop down menu will show any list of
+      prepopulated choices, as well as a historic of the last provided inputs. The editor
+      provides autocompletion, and, if defined as non editable, will restrict the input to one of the
+      available choices.
+    </p>
+    
+    <p>Since version 4.0, the choices can be adaptives -this functionality is enabled by default-.
+    With adaptive choices, applying a filter on an editor will hide, in the other editors, all
+    the choices that are not applicable any longer (selecting those choices would produce
+    and empty table, completely filtered out). 
+     
+    <p>
+      It is possible to provide a renderer, as it is done on generic swing tables and lists, 
+      supporting implementations such as:
+    </p>
+
+    <p><img src="images/version3-b.png" class="centered"></p>
+     
+    <p>
+      An editor has the type <a href='api/net/coderazzi/filters/gui/IFilterEditor.html'>IFilterEditor</a>,
+      and can be obtained from the <a href='api/net/coderazzi/filters/gui/TableFilterHeader.html'>TableFilterHeader</a>
+      as:
+    </p>
+     
+    <pre>IFilterEditor editor = filterHeader.getFilterEditor(modelColumn);</pre>
+     
+    <p>
+      Its API includes methods such as:
+    </p>
+	<ul>
+	  <li>
+	    <a href='api/net/coderazzi/filters/gui/IFilterEditor.html#setEditable(boolean)'>setEditable</a>:
+	    defines whether the user can enter free text, or choose one of the available, prepopulated, choices.        
+	  </li>
+	  <li>
+	    <a href='api/net/coderazzi/filters/gui/IFilterEditor.html#setAutoChoices(net.coderazzi.filters.gui.AutoChoices)'>setAutoChoices</a>:
+	    instructs the editor to extract the options from the table's content. This is a dynamic process, if new
+	    content is added to the table, new options will be presented to the user.        
+	  </li>
+	  <li>
+	    <a href='api/net/coderazzi/filters/gui/IFilterEditor.html#setCustomChoices(java.util.Set)'>setCustomChoices</a>:
+	    defines the set of options that the user can choose. If the editor is defined as non editable,
+	    the user can only choose one of these options.
+	  </li>
+	  <li>
+	    <a href='api/net/coderazzi/filters/gui/IFilterEditor.html#setMaxHistory(int)'>setMaxHistory</a>:
+	    if there are options available, the max history defines the number of historic elements to present.
+	    The history can therefore be disabled by setting the max history to 0.
+	  </li>
+	  <li>
+	    <a href='api/net/coderazzi/filters/gui/IFilterEditor.html#setRenderer(net.coderazzi.filters.gui.ChoiceRenderer)'>setRenderer</a>:
+	    defines (or unsets) the renderer used to display the filter's content. Setting a renderer has a major
+	    implication: editor becomes non editable.
+	  </li>
+	</ul>
+     
+    <p>
+      It is possible to affect the look and feel and the behaviour of all the editors 
+      by using directly the API of the
+      <a href='api/net/coderazzi/filters/gui/TableFilterHeader.html'>filter header</a>. 
+      For example, the following line of code changes the background color:
+    </p>
+     
+    <pre>filterHeader.setBackground(Color.lightGray);</pre> 
+     
+  
+    <h2><a name='autochoices'>Auto Choices</a></h2>
+    
+    <p>
+    	It is possible to define the choices displayed for each editor in
+    	the filter header. The basic behaviour is to associate choices only to
+    	columns with boolean or enumeration classes, but it is possible to
+    	automatically extract all the unique values from a table's column as
+    	the listed choices. This is achieved by setting the mode
+    	AutoChoices.ENABLED, which can be done for the whole table, or just
+    	for specific columns.</p>
+    	
+    <p>
+    	Please note that there is obviously an overhead on extracting the
+    	unique values of the table, and it is likely not very effective
+    	displaying those values if there is a great number of them. For that
+    	reason, it is recommended to only enable full auto choices for those
+    	columns having a limited number of distinct values.
+    </p>
+    
+    <p>
+        It is also possible to fully customize the displayed choices, as 
+        explained in the <a href='#custom'>custom choices</a> section.
+    </p>
+    	    	 
+    	
+
+    <h2><a name='parser'>Filter Expressions</a></h2>
+     
+    <p>
+      The library is delivered with a single expression parser, which supports
+      a comprehensive set of operators to define simple filtering expressions. 
+      It is possible to define new parsers by implementing the
+      <a href='api/net/coderazzi/filters/IParser.html'>IParser</a> interface.
+    </p>
+
+    <p>		
+      The supported operators include:
+      <ul>
+	      <li>
+		      Comparison operators. The comparison is done on the parsed object, not on the string 
+		      representation, unless no <A HREF="http://java.sun.com/javase/6/docs/api/java/text/Format.html?is-external=true" title="class or interface in java.text"><CODE>Format</CODE></A> or <A HREF="http://java.sun.com/javase/6/docs/api/java/util/Comparator.html?is-external=true" title="class or interface in java.util"><CODE>Comparator</CODE></A> is defined for the given type.
+		      For example, specifying the text &quot;&gt;= 4&quot; implies, for a column with integer types,
+		      that a direct comparison between integers will be performed. These operators are:
+		      <ul>
+			      <li>&gt;=</li>
+			
+			      <li>&gt;</li>
+			      <li>&lt;</li>
+			      <li>&lt;=</li>
+			      <li>&lt;&gt;</li>
+			      <li>!</li>
+			      <li>=</li>
+		      </ul>
+	      </li>
+	      <li>
+		      Basic wildcard operators. These operators work using the string representation of the
+		      types (using, when possible, the defined <A HREF="http://java.sun.com/javase/6/docs/api/java/text/Format.html?is-external=true" title="class or interface in java.text"><CODE>Format</CODE></A> instance). Only two wildcard characters
+		      are defined: * and ?
+		      <ul>	
+			      <li>~: for example ~ *vadis* will filter in all expressions including the substring vadis</li>
+			      <li>!~: negates the previous operator</li>
+		      </ul>
+	      </li>
+	      <li>
+	          Regular expression operator. There is only one such operator: ~~, accepting a java regular
+		      expression.
+	      </li>
+      </ul>		     
+     <p>
+     
+	<h2><a name='parsermodel'>Parser Model</a></h2>
+	
+     <p>A parser is created by the registered 
+     <a href='api/net/coderazzi/filters/gui/IParserModel.html'>IParserModel</a> 
+     implementation -any filter header can define its own model-. This model
+     defines methods that affect how the text parsing is performed:
+     </p>
+     <ul>
+        <li>
+        <a href='api/net/coderazzi/filters/gui/IParserModel.html#setIgnoreCase(boolean)'>setIgnoreCase</a>:
+        defines if the filter matching is case sensitive or not. It also affects how the options in the
+        filter editor are located, ignoring case or not.
+        </li>
+        <li>
+        <a href='api/net/coderazzi/filters/gui/IParserModel.html#setFormat(java.lang.Class, java.text.Format)'>setFormat</a>:
+        this and the <a href='api/net/coderazzi/filters/gui/IParserModel.html#setComparator(java.lang.Class, java.util.Comparator)'>setComparator</a>
+        method are normally required to use custom types.
+        </li>
+     </ul>
+     
+     <p>Note that both methods are also available directly on the <a href='api/net/coderazzi/filters/gui/IFilterEditor.html'>IFilterEditor</a>
+     interface, so it is possible to modify each editor on its own.</p> 
+
+
+	<p>The parser model is responsible to create the 
+	<a href='api/net/coderazzi/filters/IParser.html'>IParser</a> instance
+	associated to each filter editor; it is therefore possible to define different
+	IParser instances with alternative parsing expressions.</p>
+
+
+     <h2><a name='types'>Custom types</a></h2>
+     
+     <p>
+       The type associated to each table's column is defined by its table model. Primitive types
+       are directly supported, but the user must provide specific 
+       <a href='http://java.sun.com/javase/6/docs/api/java/text/Format.html?is-external=true'>format</a>
+       instances to define how to parse or format other objects.
+     </p>
+     
+     <p>
+       If the user fails to define the format for any non primitive, the library will use the default
+       string representation. If the table includes some renderer to format an object, the default
+       string representation will normally be not enough, and the filtering will look wrong. In addition,
+       all the filtering operations will be string based, which can affect to the performance and, worse, to the
+       operation logic.
+     </p>
+     
+     <p>
+       For example, a date can be renderer as <span class='mark'>DD/MM/YYYY</span>; if this format
+       is not provided, an expression such as <span class='mark'> &gt; 01/02/2020</span> can give
+       faux positives for dates like <span class='mark'>11/12/2019</span>.
+     </p>
+     
+     <p>
+       Dates are, in fact, the only non primitive type directly supported by the library, although
+       the user should still provide the right used format. The default format is predefined in
+       <a href='api/net/coderazzi/filters/gui/FilterSettings.html#dateFormat'>FilterSettings.dateFormat</a>,
+       or can be specified on each parser separately, using the 
+       <a href='api/net/coderazzi/filters/IParser.html#setFormat(java.lang.Class, java.text.Format)'>setFormat</a> method.
+     </p>
+
+	<h2><a name='compare'>Comparisons</a></h2>
+
+	<p>The parser model requires a proper definition of a comparator to be able to evaluate
+	expressions involving comparisons, such as '&gt; 34'.
+	The comparator specified on a given editor is also used (since version 5.0)
+	to sort the choices -in previous versions, choices would be sorted
+	alphabetically-.	
+	</p>
+	
+	<p>It is possible to specify a different comparator to sort the choices,
+	by invoking the method <a href='api/net/coderazzi/filters/gui/IFilterEditor.html#setChoicesComparator(java.util.Comparator)'>setChoicesComparator</a>.
+	This is useful, for example, to sort these choices in inverse order.
+	</p>
+
+	<h2><a name='custom'>Custom Choices</a></h2>
+	
+	<p>CustomChoices, represented by class 
+	<a href='api/net/coderazzi/filters/gui/CustomChoice.html'>CustomChoice</a>,
+	are choices whose functionality and appearance are fully defined by the
+	library's user.</p>
+	
+	<p>Custom choices are always listed at the beginning of the filter editor
+	choices. The next image shows 2 standard choices, plus 4 user-defined ones:</p>
+	
+	<p><img src="images/cchoice.png" class="centered"></p>
+			
+	<p>The two standard choices on this example are the empty filter and the
+	match empty filter, represented with the label <span class='mark'>=</span>
+	and an empty cell icon. The 4 choices below -below 20 to over 35- are
+	defined by the user, who must implement the filter logic. When the user
+	enters the text  <span class='mark'>over 35</span>, the text is not parsed
+	by the usual expression parser, but matched with the custom choice and its
+	filter applied.</p>
+	
+	<p>It is possible to define the overall look of the custom choices by
+	providing a specific 
+	<a href='api/net/coderazzi/filters/gui/CustomChoiceDecorator.html'>CustomChoiceDecorator</a>.
+	Such a decorator has no full freedom to render the custom choice, but it
+	can modify attributes such as colors or text, and specify how to decorate
+	the custom choice -usually displaying its associated icon-. The default
+	decorator displays the choice's text in italic, and its associated icon
+	centered, unless it overlaps with the text.</p>
+	
+	<h2><a name='html'>Html support</a></h2>
+     
+     <p>From version 4.3, the library handles properly html content on the
+     table cells. The filter expression entered by the user is HTML agnostic,
+     but it will match the table cells with HTML content -HTML tags are excluded
+     from the search</p>
+     
+     <p>Special HTML characters on the table cells are also converted into
+     Java characters before performing the filtering.</p>
+     
+     <p>Starting on version 4.5, columns with html content can be properly 
+     rendered, by setting the new
+     <a href='api/net/coderazzi/filters/gui/HtmlChoiceRenderer.html'>HtmlChoiceRenderer</a>
+     as renderer for that column</p>. This operation must be performed manually,
+     that is, the library will not automatically setup a HtmlChoiceRenderer for
+     columns where html content is detected: setting up a renderer implies that
+     the associated filter editor is not editable any longer -the user can
+     only choose among the given options-.</p>
+     
+     <p>Setting up the renderer is done by invoking the method:
+     <a href='api/net/coderazzi/filters/gui/IFilterEditor.html#setRenderer(net.coderazzi.filters.gui.ChoiceRenderer)'>setRenderer</a>
+     </p>
+	
+     <h2><a name='also'>Additional functionality</a></h2>
+     
+     <p>Since version 4.0, the choices displayed on each editor's popup 
+     can be <span class='mark'>adaptives</span>, so that only relevant choices are 
+     displayed. This functionality can be setup at header's level, using the method
+     <a href='api/net/coderazzi/filters/gui/TableFilterHeader.html#setAdaptiveChoices(boolean)'>TableFilterHeader.setAdaptiveChoices</a></p>
+
+     <p>Version 4.1 has introduced <span class='mark'>autocompletion</span> on all filter editors; on
+     previous releases, only non editable editors would have autocompletion,
+     limiting the input to one of the available choices. Autocompletion works
+     by providing the more complete text matching all the available choices.
+     It can be defined at header level, using the method
+     <a href='api/net/coderazzi/filters/gui/TableFilterHeader.html#setAutoCompletion(boolean)'>TableFilterHeader.setAutoCompletion</a>,
+     or directly at <a href='api/net/coderazzi/filters/gui/IFilterEditor.html'>IFilterEditor</a> level.
+     </p> 
+     
+     <p>Also from version 4.1, the library supports <span class='mark'>instant filtering</span>:
+     the filter is applied as the user enters the text. The exact implementation
+     and behaviour of this functionality depends on the registered
+     <a href='api/net/coderazzi/filters/IParser.html'>IParser</a> instance.
+     By default, instant filtering applies on expressions including no operators,
+     and it considers the input expression as the starting text of the final
+     expression. This functionality can be defined at header level, using the method
+     <a href='api/net/coderazzi/filters/gui/TableFilterHeader.html#setInstantFiltering(boolean)'>TableFilterHeader.setInstantFiltering</a>,
+     or directly at <a href='api/net/coderazzi/filters/gui/IFilterEditor.html'>IFilterEditor</a> level.</p>
+     
+     <p>From version 4.2, it is possible to disable the user interaction on a 
+     given filter editor. The editor behaves as disabled -user cannot change it-,
+     but states active, filtering out any unmatched table rows.</p> 
+     
+     <p>The library provides specific feedback to signal that the current
+     editor's contents hide all the table rows, by displaying the editors text
+     with a specific color (warning color). With instant filtering, this warning
+     is only set on the current editor, and implies that the filter is not applied
+     unless the user specifically presses the Enter key or moves the focus away.
+     This behaviour is helpful to avoid sudden vanishing of the table rows if the
+     user enters some wrong character during the edition.</p> 
+     
+     <p>Table changes are automatically handled by the library; in case of
+     updates, the table row sorter associated to the table can be updated or
+     not (by default, the swing behaviour is not to update it). In this case,
+     an update will not trigger a table re-sorting and the filter updates
+     will not be propagated. To reverse this behaviour, it is needed to
+     invoke the method <a href='http://java.sun.com/javase/6/docs/api/javax/swing/DefaultRowSorter.html?is-external=true#setSortsOnUpdates(boolean)'>
+     DefaultRowSorter.setSortOnUpdates</a>. TableFilter facilitates this
+     operation by providing the method
+     <a href='api/net/coderazzi/filters/gui/TableFilterHeader.html#setFilterOnUpdates(boolean)'>TableFilterHeader.setFilterOnUpdates</a>,
+     which effectively sets/unsets the sort on updates flag. In addition,
+     it sets this flag to true by default.
+      
+     </p>
+     
+     <h2><a name='settings'>Settings</a></h2>
+     
+     <p>
+       The <a href='api/net/coderazzi/filters/gui/FilterSettings.html'>FilterSettings</a> singleton
+       collects all default settings that will be used when new FilterHeaders are created. As in previous
+       versions, it is also possible defining theses settings using system properties; it includes: 
+     </p>
+     
+     <ul>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#adaptiveChoices'>adaptiveChoices</a>,
+	     true by default, sets or unsets the adaptive choices functionality.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#autoChoices'>autoChoices</a>,
+	     false by default, defines whether the editors should automatically extract the options from
+	     the associated table models.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#autoCompletion'>autoCompletion</a>,
+	     true by default, defines the auto completion functionality on editable text editors 
+	     (non editable editors have auto completion always on).</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#autoSelection'>autoSelection</a>,
+	     true by default, defines whether the filter will automatically select a row when that row is
+	     the only one remaining in the table after a filter operation.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#backgroundColor'>backgroundColor</a> color.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#customChoiceDecoratorClass'>customChoiceDecoratorClass</a> defines
+	     the class implementing the default custom choices decoration.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#dateFormat'>dateFormat</a>,
+	     used by the parser, as detailed <a href='#types'>above</a></li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#disabledBackgroundColor'>disabledBackgroundColor</a> color.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#disabledColor'>disabledColor</a> color.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#errorColor'>errorColor</a> color.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#filterOnUpdates'>filterOnUpdates</a> defines
+	     whether the filters should be reapplied on table updates.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#filterRowHeightDelta'>filterRowHeightDelta</a> 
+	     is a setting to add / decrease height to the filter row.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#font'>font</a>.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#foregroundColor'>foregroundColor</a> color.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#gridColor'>gridColor</a> color.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#headerPosition'>headerPosition </a>,
+	     whether to locate the filter header just above or below the table's header, or wheter the
+	     placement will be done manually by the programmer.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#ignoreCase'>ignoreCase</a></li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#instantFiltering'>instantFiltering</a>, 
+	     whether to enable instant filtering, true by default.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#ignoreCase'>ignoreCase</a></li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#matchEmptyFilterIcon'>matchEmptyFilterIcon</a>,
+	     path to the resource with the icon for empty matches.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#matchEmptyFilterString'>matchEmptyFilterString</a>,
+	     the string defining the empty match custom choice.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#maxPopupHistory'>maxPopupHistory </a>,
+	     the maximum size of the history when no choices are present.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#maxVisiblePopupRows'>maxVisiblePopupRows </a>,
+	     used to limit the size of the popup menus in the filter editors.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#parserModelClass'>parserModelClass</a> defines
+	     the class implementing the default parser model.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#selectionBackgroundColor'>selectionBackgroundColor</a> color.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#selectionColor'>selectionColor</a> color.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#selectionForegroundColor'>selectionForegroundColor</a> color.</li>
+	     <li><a href='api/net/coderazzi/filters/gui/FilterSettings.html#warningColor'>warningColor</a> color.</li>
+     </ul>
+
+
+	<h2><a name='examples'>Examples</a></h2>
+	
+	<p>
+	  The source distribution includes a test program -whose screenshots are used in this document-.
+	  The program makes use of most of the features built in the library, so its code can be used
+	  to study how to use the library. It is also useful to check the effect of the settings on the
+	  filters.
+	</p>
+	
+	<p>
+	  The example is located in the package <span class='mark'>net.coderazzi.filters.examples</span>,
+	  under the examples folder.
+	</p>
+	
+	<p>
+	  It can be also directly tested using this <a href='download/example6.jar'>link</a>.
+	</p>  
+	 
+</div></body>
+</html>
